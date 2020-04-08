@@ -86,7 +86,9 @@ def loadletters():
     return(result)
 
 
-def getGrid(fullimage):
+def getGrid(imgpath):
+    fullimage = Image.open(imgpath).convert("L")
+
     grid = []
     squares = getListOfSquares(fullimage, 1)
     letters = loadletters()
@@ -98,14 +100,3 @@ def getGrid(fullimage):
                 grid.append(letter)
 
     return(grid)
-
-
-# getAllSquares()
-# identify()
-
-fullscreen = Image.open(
-    path_img + "/full/Screenshot_20200327-195441.jpg").convert("L")
-grid = getGrid(fullscreen)
-print(grid)
-
-exit()

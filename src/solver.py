@@ -1,8 +1,12 @@
 import time
+import ocr
 start_time = time.time()
 
-grid = ['I', 'A', 'T', 'R', 'D', 'U', 'S', 'E',
-        'E', 'V', 'E', 'S', 'I', 'E', 'O', 'R']
+pathdict = "words/liste.txt"
+pathimg = "img/tosolve.jpg"
+
+grid = ocr.getGrid(pathimg)
+print(grid)
 
 
 def neighboors(case):
@@ -37,6 +41,24 @@ def getstring(chemin, grille):
     return(s)
 
 
+def cleandict(path, grid):
+    """Nettoie le dictionnaire en retirant tous les mots non faisables"""
+    with open(path, "r+") as textfile:
+        text = textfile.read().split()
+
+    dictionnaire = []
+    startsize = len(text)
+
+    for mot in text:
+        if not ((len(mot) == 1) or (len(mot) >= 16) or ("-" in mot) or not (set(mot) <= set(grid))):
+            dictionnaire.append(mot)
+
+    endsize = len(dictionnaire)
+    print(
+        f"Dictionnaire passé de {startsize} à {endsize} mots ({endsize - startsize})")
+    return(dictionnaire)
+
+
 def solve(grid):
     """
     @parameter : a grid of letters
@@ -46,9 +68,7 @@ def solve(grid):
     motstrouves = {}
 
     # Récupération du dictionnaire
-    with open("words/liste.txt", "r") as textfile:
-        dictionnaire = textfile.read().split()
-
+    dictionnaire = cleandict(pathdict, grid)
     # Initialisation des chemins de base :
     # (ce sont juste des numéros de cases)
     chemins = []
@@ -57,7 +77,7 @@ def solve(grid):
 
     # On évalue tour à tour chaque chemin
     for chemin in chemins:
-        #print(f"Etude du chemin {chemin}")
+        # print(f"Etude du chemin {chemin}")
         # Pour chacun de ces chemins on regarde l'ensemble des voisins de sa dernière case
         # Naturellement, on en exclut les voisins qui sont déjà dans le chemin
         voisins = [v for v in neighboors(chemin[-1]) if v not in chemin]
@@ -65,20 +85,20 @@ def solve(grid):
         # On observe à présent chacun de ces voisins :
         for voisin in voisins:
             found = False
-            #print(f"\tEtude du voisin {voisin} :")
+            # print(f"\tEtude du voisin {voisin} :")
             # On regarde le nouveau chemin potentiel et la chaine associée
             newchemin = chemin[:]
             newchemin.append(voisin)
 
             newchaine = getstring(newchemin, grid)
-            #print(f"\t\tchemin {newchemin} pour chaine {newchaine} : ", end="")
+            # print(f"\t\tchemin {newchemin} pour chaine {newchaine} : ", end="")
             # On compare à ce qu'on a dans le dictionnaire :
             # Si il y a un match c'est chouette
             if ((newchaine not in motstrouves.keys()) and (newchaine in dictionnaire)):
                 chemins.append(newchemin)
                 found = True
                 motstrouves[newchaine] = newchemin
-                #print("trouvé dans le dictionnaire")
+                # print("trouvé dans le dictionnaire")
                 continue  # Puisque la chaine est un mot il y a des bonnes chances qu'il existe aussi d'autres chaines qui commencent par ce mot
 
             # On peut quand même espérer un match si des mots commencent par cette chaine
@@ -86,11 +106,11 @@ def solve(grid):
                 if (mot.startswith(newchaine)):
                     chemins.append(newchemin)
                     found = True
-                    #print(f"Début de la chaine {mot}")
+                    # print(f"Début de la chaine {mot}")
                     break  # Il suffit de trouver un mot qui commence par cette chaine pour que ça vaille le coup de la garder
 
             if not found:
-                #print("pas dans le dictionnaire")
+                # print("pas dans le dictionnaire")
                 pass
                 # Après l'avoir analysé on supprime le chemin
         chemins.remove(chemin)
@@ -101,5 +121,4 @@ solution = solve(grid)
 
 for mot in solution.keys():
     print(f"{mot} : {solution[mot]}")
-
-print("--- %s seconds ---" % (time.time() - start_time))
+print(f"Temps d'execution : {time.time() - start_time} secondes")
