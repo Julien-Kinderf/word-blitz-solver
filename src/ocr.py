@@ -19,7 +19,30 @@ def samePicture(image1, image2):
     return(isThisBlack(ImageChops.difference(image1, image2)))
 
 
-def getListOfSquares(fullimage, idfull):
+def getLetterDict(path):
+    """
+    Input : The directory where identified letters are stored\n
+    Output : A dictionnary : keys are letters, elements are pictures
+
+    """
+    result = {}
+    for letter in os.listdir(f"{path}"):
+
+        imletter = Image.open(f"{path}/{letter}")
+        result[letter] = imletter
+    return(result)
+
+
+def getListOfSquares(path):
+    """
+    Gets letters by hand
+    @param: The path to a Word Blitz screenshot
+    @returns : A list of 16 square images containing the letters of the image
+    """
+
+    # Let's get the picture of this screenshot (L is for grey leveling)
+    fullimage = Image.open(path).convert("L")
+
     squares = []
     squares.append(fullimage.crop((66, 643, 283, 859)))  # row one
     squares.append(fullimage.crop((310, 643, 527, 859)))  # row one
@@ -41,59 +64,24 @@ def getListOfSquares(fullimage, idfull):
     squares.append(fullimage.crop((554, 1375, 771, 1591)))  # row four
     squares.append(fullimage.crop((798, 1375, 1015, 1591)))  # row four
 
-    # More cropping
-    inc = 70
+    # More cropping : we only want to get the letter
+    inc = 70  # The number of pixels by witch we crop our squares
     for i in range(len(squares)):
         squares[i] = squares[i].crop((inc, inc, 216 - inc, 216 - inc))
-        squares[i].save(f"./img/cropped/image{idfull}-{i}.png")
-
     return(squares)
 
 
-def getAllSquares():
-    id = 0
-    for file in os.listdir(path_img + "/full/"):
-        print(path_img + "/full/" + file)
-        image = Image.open(path_img + "/full/" + file).convert("L")
-        getListOfSquares(image, id)
-        id += 1
-
-
-def identify():
-    # Asks the user to identify letters in the cropped section
-    # Once identified, the file is renamed to LETTER.png
-    found = []
-    # For all non analysed cropped letter
-    for letter in os.listdir(path_img + "/cropped/"):
-        if (letter == ".directory"):  # This one is not an image
-            continue
-
-        imletter = Image.open(f"{path_img}/cropped/{letter}")  # Get the image
-        imletter.show()
-        name = input("Quelle lettre vient de s'afficher ? ")
-
-        found.append(name)
-        os.rename(f"{path_img}/cropped/{letter}",
-                  f"{path_img}/identified/{name}")
-
-
-def loadletters():
-    result = {}
-    for letter in os.listdir(f"{path_img}/identified"):
-
-        imletter = Image.open(f"{path_img}/identified/{letter}")
-        result[letter] = imletter
-    return(result)
-
-
-def getGrid(imgpath):
-    fullimage = Image.open(imgpath).convert("L")
+def getGrid(imgpath, letterpath):
+    """
+    Input : path to a Word Blitz screenshot\n
+    Output : a grid corresponding to the letters in this screenshot
+    """
 
     grid = []
-    squares = getListOfSquares(fullimage, 1)
-    letters = loadletters()
+    squares = getListOfSquares(imgpath)
+    letters = getLetterDict(letterpath)
 
-    column = 0
+    # Goes through each square in order and compares it to identified letters
     for square in squares:
         for letter in letters.keys():
             if (samePicture(square, letters[letter])):

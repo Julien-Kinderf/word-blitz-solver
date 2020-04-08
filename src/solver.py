@@ -1,38 +1,40 @@
+#!/usr/bin/python3
+"""
+This script
+"""
+
+import sys
+import os
 import time
 import ocr
-start_time = time.time()
-
-pathdict = "words/liste.txt"
-pathimg = "img/tosolve.jpg"
-
-grid = ocr.getGrid(pathimg)
-print(grid)
 
 
 def neighboors(case):
+    """
+    Returns the list of neighboors of the input node, following our grid convention
+    """
 
-    # Renvoie la liste des voisins de la case donnée en entrée
-    # Fonctionne uniquement pour ce problème précis puisqu'on imagine une grille carrée de côté 4
-    voisins = {0: [1, 4, 5],
-               1: [0, 2, 5, 6, 4],
-               2: [1, 3, 6, 7, 5],
-               3: [2, 7, 6],
+    # Switch case made with a dictionnary
+    n = {0: [1, 4, 5],
+         1: [0, 2, 5, 6, 4],
+         2: [1, 3, 6, 7, 5],
+         3: [2, 7, 6],
 
-               4: [0, 1, 5, 9, 8],
-               5: [4, 6, 1, 9, 0, 10, 2, 8],
-               6: [5, 7, 2, 10, 1, 11, 3, 9],
-               7: [2, 3, 6, 10, 11],
+         4: [0, 1, 5, 9, 8],
+         5: [4, 6, 1, 9, 0, 10, 2, 8],
+         6: [5, 7, 2, 10, 1, 11, 3, 9],
+         7: [2, 3, 6, 10, 11],
 
-               8: [4, 5, 9, 12, 13],
-               9: [8, 10, 5, 13, 4, 14, 6, 12],
-               10: [9, 11, 6, 14, 5, 15, 7, 13],
-               11: [6, 7, 10, 14, 15],
+         8: [4, 5, 9, 12, 13],
+         9: [8, 10, 5, 13, 4, 14, 6, 12],
+         10: [9, 11, 6, 14, 5, 15, 7, 13],
+         11: [6, 7, 10, 14, 15],
 
-               12: [13, 8, 9],
-               13: [12, 14, 9, 8, 10],
-               14: [13, 15, 10, 9, 11],
-               15: [14, 11, 10, ]}
-    return(voisins[case])
+         12: [13, 8, 9],
+         13: [12, 14, 9, 8, 10],
+         14: [13, 15, 10, 9, 11],
+         15: [14, 11, 10, ]}
+    return(n[case])
 
 
 def getstring(chemin, grille):
@@ -54,12 +56,10 @@ def cleandict(path, grid):
             dictionnaire.append(mot)
 
     endsize = len(dictionnaire)
-    print(
-        f"Dictionnaire passé de {startsize} à {endsize} mots ({endsize - startsize})")
     return(dictionnaire)
 
 
-def solve(grid):
+def solve(grid, path_to_dict):
     """
     @parameter : a grid of letters
     @output : a dictionnary : keys are possible words and elements are the necessary moves
@@ -68,7 +68,7 @@ def solve(grid):
     motstrouves = {}
 
     # Récupération du dictionnaire
-    dictionnaire = cleandict(pathdict, grid)
+    dictionnaire = cleandict(path_to_dict, grid)
     # Initialisation des chemins de base :
     # (ce sont juste des numéros de cases)
     chemins = []
@@ -117,8 +117,50 @@ def solve(grid):
     return(motstrouves)
 
 
+"""
 solution = solve(grid)
 
 for mot in solution.keys():
     print(f"{mot} : {solution[mot]}")
 print(f"Temps d'execution : {time.time() - start_time} secondes")
+"""
+if __name__ == "__main__":
+    start_time = time.time()
+    os.system('clear')
+    if (len(sys.argv) != 2):
+        print(f"Usage : python3 solver.py <path to your image>")
+        exit(0)
+
+    # Retrieving the input file
+    relative_path_to_image = sys.argv[1]
+    if (os.path.exists(relative_path_to_image)):
+        absolute_path_to_image = os.path.abspath(relative_path_to_image)
+    else:
+        print(f"Cannot find {relative_path_to_image}")
+        exit(1)
+
+    # Retrieving the identified letter folder path
+    absolute_path_to_letters = __file__.replace(
+        "/src/solver.py", "/img/identified/")
+
+    # Retrieving the path for the used dictionnary
+    absolute_path_to_dictionnary = __file__.replace(
+        "/src/solver.py", "/words/dictionnary.txt")
+    # getting the grid
+    grid = ocr.getGrid(absolute_path_to_image, absolute_path_to_letters)
+
+    print(
+        f"Detected the following grid in {round(time.time() - start_time, 2)} seconds :\n{' '.join(grid[0:4])}\n{' '.join(grid[4:8])}\n{' '.join(grid[8:12])}\n{' '.join(grid[12:16])}\n")
+
+    # Beginning of the word research phase
+    print("Starting the word research ...")
+    research_start_time = time.time()
+    solution = solve(grid, absolute_path_to_dictionnary)
+    research_end_time = time.time()
+
+    print(
+        f"Found {len(solution)} possible words in {round(research_end_time - research_start_time, 2)} seconds :")
+    for word in solution.keys():
+        print(f"{word} ({len(word)}): {solution[word]}")
+
+    print(f"Finished in {round(time.time() - start_time, 2)} seconds")
