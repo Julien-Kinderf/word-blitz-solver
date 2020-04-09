@@ -186,4 +186,4 @@ if __name__ == "__main__":
             break
 
     print(
-        f"Entered {nb} words in {round(time.time() - typing_start, 2)} seconds")
+        f"Entered {nbwords} words in {round(time.time() - typing_start, 2)} seconds")
