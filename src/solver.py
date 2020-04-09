@@ -182,7 +182,7 @@ if __name__ == "__main__":
         os.system(f"bash {absolute_path_to_exec} {pattern}")
         nbwords += 1
 
-        if ((time.time() - start_time) > 78):
+        if ((time.time() - start_time) > 40):  # Put this value to 78 to play all time
             break
 
     print(

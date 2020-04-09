@@ -6,7 +6,6 @@
 
 PATTERN=$@
 
-
 # This script takes a list of grid nodes as an input
 # It just links the dots accordingly
 

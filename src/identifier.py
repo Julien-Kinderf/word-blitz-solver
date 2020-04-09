@@ -45,9 +45,20 @@ def identify(path):
                 # I've never seen this square in my life
                 square.show()
                 squareletter = input("What letter is that ?")
-                square.save(f"{projectroot}{identifiedpath}{squareletter}.png")
-                os.rename(f"{projectroot}{identifiedpath}{squareletter}.png",
-                          f"{projectroot}{identifiedpath}{squareletter}")
+                name = f"{squareletter}.png"
+                if (squareletter not in os.listdir(f"{projectroot}{identifiedpath}")):
+                    square.save(
+                        f"{projectroot}{identifiedpath}{squareletter}.png")
+                    os.rename(f"{projectroot}{identifiedpath}{squareletter}.png",
+                              f"{projectroot}{identifiedpath}{squareletter}")
+                else:
+                    n = len([f for f in os.listdir(
+                        f"{projectroot}{identifiedpath}") if f[0] == squareletter])
+                    print(f"This letter had already been registered {n} times")
+                    square.save(
+                        f"{projectroot}{identifiedpath}{squareletter}.png")
+                    os.rename(f"{projectroot}{identifiedpath}{squareletter}.png",
+                              f"{projectroot}{identifiedpath}{squareletter}{n+1}")
                 print(
                     f"Letter {squareletter} identified and saved to /img/identified")
 

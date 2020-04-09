@@ -1,4 +1,3 @@
-from tesserocr import PyTessBaseAPI
 from PIL import Image, ImageChops
 import os
 
@@ -7,7 +6,7 @@ path_img = "./img"
 
 def isThisBlack(image):
     black = False
-    treshold = 15
+    treshold = 9
     imlist = list(image.getdata())
     colorsum = 0
     for pixel in imlist:
@@ -47,7 +46,7 @@ def getListOfSquares(path):
     # The top left corner is at 60, 659
     square_dim = 220
     square_space = 27
-    increment = 70
+    increment = 65
 
     start_tlx = 60
     start_tly = 659
@@ -85,5 +84,10 @@ def getGrid(imgpath, letterpath):
     for square in squares:
         for letter in letters.keys():
             if (samePicture(square, letters[letter])):
-                grid.append(letter)
+                # In case we have several instances of this identified letter and it has a longer name (ex : W2)
+                name = letter
+                if len(name) > 1:
+                    name = name[0]
+                grid.append(name)
+                break
     return(grid)
