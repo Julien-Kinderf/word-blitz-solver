@@ -52,7 +52,7 @@ def cleandict(path, grid):
     startsize = len(text)
 
     for mot in text:
-        if not ((len(mot) == 1) or (len(mot) >= 16) or ("-" in mot) or not (set(mot) <= set(grid))):
+        if not ((len(mot) == 1) or (len(mot) >= 17) or ("-" in mot) or not (set(mot) <= set(grid))):
             dictionnaire.append(mot)
 
     endsize = len(dictionnaire)
@@ -64,7 +64,6 @@ def solve(grid, path_to_dict):
     @parameter : a grid of letters
     @output : a dictionnary : keys are possible words and elements are the necessary moves
     """
-
     motstrouves = {}
 
     # Récupération du dictionnaire
@@ -76,7 +75,8 @@ def solve(grid, path_to_dict):
         chemins.append([i])
 
     # On évalue tour à tour chaque chemin
-    for chemin in chemins:
+    while len(chemins) > 0:
+        chemin = chemins[0]
         # print(f"Etude du chemin {chemin}")
         # Pour chacun de ces chemins on regarde l'ensemble des voisins de sa dernière case
         # Naturellement, on en exclut les voisins qui sont déjà dans le chemin
@@ -89,6 +89,7 @@ def solve(grid, path_to_dict):
             # On regarde le nouveau chemin potentiel et la chaine associée
             newchemin = chemin[:]
             newchemin.append(voisin)
+            # ex: [0, 1] devient [0, 1, 2]
 
             newchaine = getstring(newchemin, grid)
             # print(f"\t\tchemin {newchemin} pour chaine {newchaine} : ", end="")
@@ -113,6 +114,7 @@ def solve(grid, path_to_dict):
                 # print("pas dans le dictionnaire")
                 pass
                 # Après l'avoir analysé on supprime le chemin
+
         chemins.remove(chemin)
     return(motstrouves)
 
@@ -143,12 +145,15 @@ if __name__ == "__main__":
     absolute_path_to_letters = __file__.replace(
         "/src/solver.py", "/img/identified/")
 
+    # Retrieving the identified letter folder path
+    absolute_path_to_exec = __file__.replace(
+        "/solver.py", "/executioner.sh")
+
     # Retrieving the path for the used dictionnary
     absolute_path_to_dictionnary = __file__.replace(
         "/src/solver.py", "/words/dictionnary.txt")
     # getting the grid
     grid = ocr.getGrid(absolute_path_to_image, absolute_path_to_letters)
-
     print(
         f"Detected the following grid in {round(time.time() - start_time, 2)} seconds :\n{' '.join(grid[0:4])}\n{' '.join(grid[4:8])}\n{' '.join(grid[8:12])}\n{' '.join(grid[12:16])}\n")
 
@@ -163,4 +168,22 @@ if __name__ == "__main__":
     for word in solution.keys():
         print(f"{word} ({len(word)}): {solution[word]}")
 
-    print(f"Finished in {round(time.time() - start_time, 2)} seconds")
+    print(
+        f"Found {len(solution)} words in {round(time.time() - start_time, 2)} seconds")
+
+    # exit()  # What follows is not ready yet
+    print()
+    typing_start = time.time()
+    print(f"Starting to send words to the phone :")
+    nbwords = 0
+    for word in sorted(solution.keys(), reverse=True, key=lambda w: len(w)):
+        print(f"Entering word {word}")
+        pattern = ' '.join([str(i) for i in solution[word]])
+        os.system(f"bash {absolute_path_to_exec} {pattern}")
+        nbwords += 1
+
+        if ((time.time() - start_time) > 78):
+            break
+
+    print(
+        f"Entered {nb} words in {round(time.time() - typing_start, 2)} seconds")

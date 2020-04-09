@@ -7,7 +7,7 @@ path_img = "./img"
 
 def isThisBlack(image):
     black = False
-    treshold = 10
+    treshold = 15
     imlist = list(image.getdata())
     colorsum = 0
     for pixel in imlist:
@@ -43,31 +43,31 @@ def getListOfSquares(path):
     # Let's get the picture of this screenshot (L is for grey leveling)
     fullimage = Image.open(path).convert("L")
 
+    # These are squares of 220*220 pixels, spaced from each other by 27 pixels
+    # The top left corner is at 60, 659
+    square_dim = 220
+    square_space = 27
+    increment = 70
+
+    start_tlx = 60
+    start_tly = 659
     squares = []
-    squares.append(fullimage.crop((66, 643, 283, 859)))  # row one
-    squares.append(fullimage.crop((310, 643, 527, 859)))  # row one
-    squares.append(fullimage.crop((554, 643, 771, 859)))  # row one
-    squares.append(fullimage.crop((798, 643, 1015, 859)))  # row one
+    for row in range(4):
+        for col in range(4):
+            tlx = start_tlx + col * (square_dim + square_space)
+            tly = start_tly + row * (square_dim + square_space)
+            brx = tlx + square_dim
+            bry = tly + square_dim
+            square = fullimage.crop((tlx, tly, brx, bry))
+            # just cropping a little more
+            square = square.crop((increment, increment,
+                                  square_dim - increment, square_dim - increment))
+            squares.append(square)
 
-    squares.append(fullimage.crop((66, 887, 283, 1103)))  # row two
-    squares.append(fullimage.crop((310, 887, 527, 1103)))  # row two
-    squares.append(fullimage.crop((554, 887, 771, 1103)))  # row two
-    squares.append(fullimage.crop((798, 887, 1015, 1103)))  # row two
-
-    squares.append(fullimage.crop((66, 1131, 283, 1347)))  # row three
-    squares.append(fullimage.crop((310, 1131, 527, 1347)))  # row three
-    squares.append(fullimage.crop((554, 1131, 771, 1347)))  # row three
-    squares.append(fullimage.crop((798, 1131, 1015, 1347)))  # row three
-
-    squares.append(fullimage.crop((66, 1375, 283, 1591)))  # row four
-    squares.append(fullimage.crop((310, 1375, 527, 1591)))  # row four
-    squares.append(fullimage.crop((554, 1375, 771, 1591)))  # row four
-    squares.append(fullimage.crop((798, 1375, 1015, 1591)))  # row four
-
-    # More cropping : we only want to get the letter
-    inc = 70  # The number of pixels by witch we crop our squares
-    for i in range(len(squares)):
-        squares[i] = squares[i].crop((inc, inc, 216 - inc, 216 - inc))
+    if (len(squares) != 16):
+        print(
+            f"Unable to detect 16 squares. You are probably missing a letter in identified.")
+        exit(1)
     return(squares)
 
 
@@ -86,5 +86,4 @@ def getGrid(imgpath, letterpath):
         for letter in letters.keys():
             if (samePicture(square, letters[letter])):
                 grid.append(letter)
-
     return(grid)
